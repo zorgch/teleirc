@@ -146,6 +146,11 @@ stickerHandler handles the Message.Sticker Telegram Object, which formats the
 Telegram message into its base Emoji unicode character.
 */
 func stickerHandler(tg *Client, u tgbotapi.Update) {
+	if !tg.IRCSettings.SendStickerEmoji {
+		tg.logger.LogDebug("Skipped processing Message.Sticker. Reason: IRC_SEND_STICKER_EMOJI=false")
+		return
+	}
+
 	username := GetUsername(tg.IRCSettings.ShowZWSP, u.Message.From, tg.Settings.PreferName)
 	formatted := fmt.Sprintf("%s%s%s %s",
 		tg.Settings.Prefix,
@@ -160,6 +165,11 @@ photoHandler handles the Message.Photo Telegram object. Only acknowledges Photo
 exists, and sends notification to IRC
 */
 func photoHandler(tg *Client, u tgbotapi.Update) {
+	if !tg.IRCSettings.SendPhoto {
+		tg.logger.LogDebug("Skipped processing Message.Photo. Reason: IRC_SEND_PHOTO=false")
+		return
+	}
+
 	link := uploadImage(tg, u)
 	username := GetUsername(tg.IRCSettings.ShowZWSP, u.Message.From, tg.Settings.PreferName)
 	caption := u.Message.Caption
@@ -181,6 +191,11 @@ documentHandler receives a document object from Telegram, and sends
 a notification to IRC.
 */
 func documentHandler(tg *Client, u *tgbotapi.Message) {
+	if !tg.IRCSettings.SendDocument {
+		tg.logger.LogDebug("Skipped processing document object. Reason: IRC_SEND_DOCUMENT=false")
+		return
+	}
+
 	username := GetUsername(tg.IRCSettings.ShowZWSP, u.From, tg.Settings.PreferName)
 	formatted := username + " shared a file"
 	if u.Document.MimeType != "" {
@@ -202,6 +217,7 @@ a notification to IRC.
 */
 func locationHandler(tg *Client, u *tgbotapi.Message) {
 	if !tg.IRCSettings.ShowLocationMessage {
+		tg.logger.LogDebug("Skipped processing location object. Reason: IRC_SHOW_LOCATION_MESSAGE=false")
 		return
 	}
 
